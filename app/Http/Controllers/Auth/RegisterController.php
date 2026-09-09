@@ -6,12 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use App\Traits\ApiResponse;
-use Illuminate\Contracts\View\View;
-use Illuminate\Http\JsonResponse;
+use Auth;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\HttpFoundation\Response;
+use Inertia\Inertia;
+use Inertia\Response;
 use Throwable;
 
 class RegisterController extends Controller
@@ -21,15 +23,31 @@ class RegisterController extends Controller
     /**
      * Show the registration form.
      */
-    public function index(): View
+    public function index(): Response
     {
-        return view('auth.register');
+        return Inertia::render('Auth/Register');
+    }
+
+    /**
+     * Show the post-registration confirmation notice.
+     */
+    public function confirm(Request $request): RedirectResponse|Response
+    {
+        $email = $request->session()->get('registered_email');
+
+        if (! $email) {
+            return redirect()->route('register');
+        }
+
+        return Inertia::render('Auth/RegisterSuccess', [
+            'email' => $email,
+        ]);
     }
 
     /**
      * Register a new user.
      */
-    public function store(RegisterRequest $request): JsonResponse
+    public function store(RegisterRequest $request): RedirectResponse
     {
         DB::beginTransaction();
 
@@ -43,11 +61,13 @@ class RegisterController extends Controller
 
             DB::commit();
 
-            return $this->successResponse(
-                'Usuario registrado correctamente.',
-                ['id' => $user->id, 'name' => $user->name, 'email' => $user->email],
-                Response::HTTP_CREATED,
-            );
+            $user->sendEmailVerificationNotification();
+
+            Auth::login($user);
+
+            return redirect()
+                ->route('register.confirm')
+                ->with('registered_email', $user->email);
         } catch (Throwable $e) {
             DB::rollBack();
 
@@ -56,10 +76,9 @@ class RegisterController extends Controller
                 'exception' => $e,
             ]);
 
-            return $this->errorResponse(
-                'Ocurrió un error al procesar tu solicitud.',
-                exception: $e,
-            );
+            return back()
+                ->withInput($request->except('password', 'password_confirmation'))
+                ->with('error', 'Ocurrió un error al procesar tu solicitud.');
         }
     }
 }

@@ -1,9 +1,83 @@
-@import 'tailwindcss';
-
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+@import "tailwindcss";
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --color-ink: #10100E;
+    --color-paper: #FFFDF5;
+    --color-lemon: #FFE14D;
+    --color-violet: #6C3BF5;
+    --color-mint: #37E0A0;
+    --color-tomato: #FF5C42;
+
+    --font-display: "Archivo Black", "Space Grotesk", system-ui, sans-serif;
+    --font-sans: "Space Grotesk", system-ui, sans-serif;
+
+    --shadow-block: 6px 6px 0 var(--color-ink);
+    --shadow-block-sm: 4px 4px 0 var(--color-ink);
+    --shadow-block-lg: 10px 10px 0 var(--color-ink);
+
+    --ease-brutal: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        background-color: var(--color-paper);
+        color: var(--color-ink);
+        font-family: var(--font-sans);
+    }
+
+    :focus-visible {
+        outline: 3px solid var(--color-violet);
+        outline-offset: 3px;
+    }
+
+    ::selection {
+        background-color: var(--color-lemon);
+        color: var(--color-ink);
+    }
+}
+
+@utility press {
+    transition:
+        transform 150ms var(--ease-brutal),
+        box-shadow 150ms var(--ease-brutal),
+        background-color 150ms var(--ease-brutal);
+
+    &:hover:not(:disabled) {
+        transform: translate(-2px, -2px);
+        box-shadow: var(--shadow-block-lg);
+    }
+
+    &:active:not(:disabled) {
+        transform: translate(3px, 3px);
+        box-shadow: 2px 2px 0 var(--color-ink);
+    }
+}
+
+@keyframes rise {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@utility rise-* {
+    animation: rise 620ms var(--ease-brutal) both;
+    animation-delay: calc(--value(integer) * 70ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
 }
