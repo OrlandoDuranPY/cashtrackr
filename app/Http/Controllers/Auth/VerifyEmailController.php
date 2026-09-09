@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
+use App\Models\User;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -51,41 +52,30 @@ class VerifyEmailController extends Controller
     }
 
     /**
-     * Confirm the signed verification link.
+     * Confirm the signed verification link, with or without an active session.
      */
-    public function update(EmailVerificationRequest $request): RedirectResponse
+    public function update(Request $request, string $id, string $hash): RedirectResponse
     {
-        if (! $request->user()->hasVerifiedEmail()) {
-            $request->fulfill();
+        $user = User::find($id);
+
+        if (! $user || ! hash_equals($hash, sha1($user->getEmailForVerification()))) {
+            return redirect()
+                ->route('login')
+                ->with('error', 'El enlace de confirmación no es válido.');
         }
 
+        if ($user->hasVerifiedEmail()) {
+            return redirect()
+                ->route($request->user() ? 'home' : 'login')
+                ->with('success', 'Tu cuenta ya estaba confirmada.');
+        }
+
+        $user->markEmailAsVerified();
+
+        event(new Verified($user));
+
         return redirect()
-            ->route('home')
-            ->with('success', 'Tu cuenta quedó confirmada.');
+            ->route($request->user() ? 'home' : 'login')
+            ->with('success', 'Tu cuenta quedó confirmada. Ya puedes iniciar sesión.');
     }
-
-    //     public function update(Request $request, string $id, string $hash): RedirectResponse
-    // {
-    //     $user = User::find($id);
-
-    //     if (! $user || ! hash_equals($hash, sha1($user->getEmailForVerification()))) {
-    //         return redirect()
-    //             ->route('login')
-    //             ->with('error', 'El enlace de confirmación no es válido.');
-    //     }
-
-    //     if ($user->hasVerifiedEmail()) {
-    //         return redirect()
-    //             ->route($request->user() ? 'home' : 'login')
-    //             ->with('success', 'Tu cuenta ya estaba confirmada.');
-    //     }
-
-    //     $user->markEmailAsVerified();
-
-    //     event(new Verified($user));
-
-    //     return redirect()
-    //         ->route($request->user() ? 'home' : 'login')
-    //         ->with('success', 'Tu cuenta quedó confirmada. Ya puedes iniciar sesión.');
-    // }
 }

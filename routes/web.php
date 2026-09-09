@@ -33,3 +33,11 @@ Route::middleware('auth')->group(function () {
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'update'])
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
+
+// ─────────────────────────────────────────────────────────────────
+//  Dashboard
+// ─────────────────────────────────────────────────────────────────
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/dashboard', fn () => Inertia::render('Dashboard/Home'))
+        ->name('dashboard');
+});

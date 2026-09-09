@@ -59,7 +59,7 @@ class LoginController extends Controller
             DB::commit();
 
             return redirect()
-                ->intended(route('home'))
+                ->intended(route('dashboard'))
                 ->with('success', 'Sesión iniciada correctamente.');
         } catch (Throwable $e) {
             DB::rollBack();
