@@ -6,7 +6,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
+Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
 // ─────────────────────────────────────────────────────────────────
 //  Register
@@ -34,10 +34,11 @@ Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'update']
     ->middleware(['signed', 'throttle:6,1'])
     ->name('verification.verify');
 
-// ─────────────────────────────────────────────────────────────────
-//  Dashboard
-// ─────────────────────────────────────────────────────────────────
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard/Home'))
+    // ─────────────────────────────────────────────────────────────────
+    //  Dashboard
+    // ─────────────────────────────────────────────────────────────────
+    Route::get('/dashboard', fn() => Inertia::render('Dashboard/Home'))
         ->name('dashboard');
 });
