@@ -6,7 +6,7 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::get('/', fn () => Inertia::render('Welcome'))->name('home');
+Route::get('/', fn() => Inertia::render('Welcome'))->name('home');
 
 // ─────────────────────────────────────────────────────────────────
 //  Register
@@ -31,7 +31,7 @@ Route::post('/auth/logout', [LoginController::class, 'destroy'])->middleware('au
 // ─────────────────────────────────────────────────────────────────
 Route::middleware('auth')->group(function () {
     Route::get('/email/verify', [VerifyEmailController::class, 'index'])->name('verification.notice');
-    Route::post('/email/verify', [VerifyEmailController::class, 'store'])->middleware('throttle:6,1')->name('verification.send');
+    Route::post('/email/verify', [VerifyEmailController::class, 'store'])->middleware('throttle:1,1')->name('verification.send');
 });
 
 Route::get('/email/verify/{id}/{hash}', [VerifyEmailController::class, 'update'])
@@ -42,6 +42,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ─────────────────────────────────────────────────────────────────
     //  Dashboard
     // ─────────────────────────────────────────────────────────────────
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard/Home'))
+    Route::get('/dashboard', fn() => Inertia::render('Dashboard/Home'))
         ->name('dashboard');
 });
